@@ -1,0 +1,945 @@
+# AKSTA Quiz 2 - notes
+
+Topic: Data manipulation using tidyverse
+
+## How can you retrieve a list of all data sets? ✅
+
+```{r}
+data()
+```
+
+## How can you get the current working directory? ✅
+
+```{r}
+getwd()
+```
+
+## How can you change the current working directory? ✅
+
+```{r}
+setwd("./aksta-quiz-notes")
+getwd()
+```
+
+## When opening a file in RStudio, what is the working directory by default? ✅
+
+Location of the file
+
+## How do you read in tabular data? ❌ ✅
+
+using `read.table` or one of its variants:
+
+* `read.csv` (delimiter , and decimal string .)
+* `read.csv2` (delimiter ; and decimal string ,)
+* `read.delim` (delimiter \t and decimal string .)
+* `read.delim2` (delimiter \t and decimal string ,)
+
+## In tidyverse, in which package is the read functionality implemented? ✅
+
+```{r}
+library("readr")
+```
+
+## What are the differences between readr and util (read.table, read.csv...)? ❌ ❌ ✅
+
+* readr is faster
+* stringAsFactor is FALSE by default (also the case after R 4.0.0)
+* output is a tibble
+* readr functions output more --> better verification of data integrity
+
+## How is the syntax of these read methods different? ✅
+
+read.csv --> read_csv
+
+## What is the purpose and associated method of the data.table package? ❌ ✅
+
+* very fast
+* produces special kind of table (`data.table`) with special properties
+
+method for reading is called `fread`
+
+## What is a possible library to read excel-files? ❌ ✅
+
+```{r}
+library("readxl")
+```
+
+## What are some of the utlity methods of this library? ✅ ✅
+
+* `excel_sheets(path)` --> outputs all the sheets in a file in a list
+* `read_excel(path)`--> reads excel file as a data frame
+
+## What is a super handy way of reading in multiple excel sheets from the same file into a list of dataframes? ✅ ✅
+
+```{r}
+dfs <- lapply(
+    excel_sheets("some/path.xlsx"),
+    read_excel,
+    path = "some/path.xlsx"
+)
+```
+
+## From what other statistics software can you import data and how? ❌ ❌ ❌
+
+Using the library "haven" you can import in the following ways?
+
+```{r}
+library("haven")
+read_sav(file, user_na = FALSE) # SPSS
+read_pow(file, user_ma = FALSE) # SPSS portable files
+read_dta(file, user_na = False) # Stata
+read_sas(data_file,
+    catalog_file = NULL,
+    encoding = NULL,
+    catalog_encoding = encoding,
+    cols_only = NULL
+)
+```
+
+## How do you import XML data? ❌ ✅
+
+Using the "XML" package:
+
+* `xmlInternalTreeParse()`
+    * generates a C-internal representation of the tree
+    * faster, more memory efficent
+    * harder to navigate (only via API)
+* `xmlTreeParse()`
+    * generates R-structure
+    * easy to manipulate
+    * less resource-efficent
+
+## What is one way of interacting with data bases? ❌ ❌ ✅
+
+```{r}
+library("RODBC")
+
+# open the ODBC connection
+ch <- odbcConnect("ODBCDriverName")
+
+# run the query, store in a data frame
+sql_result <- sqlQuery(ch, "SELECT ...
+    FROM ...
+    WHERE ...;")
+
+# close the ODBC connection
+odbcClose(ch)
+```
+
+## What is a more elegant way of interacting with databases? ❌ ❌ ✅
+
+using dyplr and a database connection:
+
+```{r}
+mytable <- tbl(ch, "tablename")
+
+mytable_filtered <- mytable %>%
+    filter(column1 > 10)
+```
+Just pick the the table in a connection and it is basically a data frame!
+
+## What are arguments for the tidy representation of data? ✅ ✅
+
+* easier, less-error prone access of the data
+* vector-based languages like R are well suited to vectorized access to data
+--> so with fixed variables being represented in a column
+
+## Explain the theory behind fixed and measured variables ✅
+
+* fixed/independent variables 
+    --> something that can be permuted in an experiment, directly influenceable by researchers
+* measured/dependent variables
+    --> affected by fixed variables
+
+## Basic observation on data representation/ What is the base view that any data-set can be broken down to: ❌ ✅
+
+Each piece of data could be represented by a triple:
+
+unit, variable, value
+
+However it is often more sensible to encode units as rows and variables as columns
+--> tidy data
+
+## What are the 5 most common cases for untidy data? ❌ ❌ ❌
+
+Important! The question whether data could be seen as untidy or not always has to be asked according to the type of analysis you are doing.
+
+* column headers are values not variables
+--> Example:
+id, is_sick, is_not_sick
+ 1,    true,       false
+ 2,   false,        true
+
+* multiple variables are stored in a column
+--> Example:
+id, purchased_items
+ 1,      1, 6, 7, 8 
+ 2,     2, 8, 9, 10 
+
+* variables are stored both in rows and columns
+--> Example:
+stock_name, Q1 2020, Q2 2020, Q3 2020, Q4 2020
+     Tesla,     151,     162,     198,     132
+ Microsoft,     201,     199,     200,     189
+
+* mutiple types of observational units are stored in the same table
+--> Example:
+stock_name,   company_hq, stock_price,       date, quantity_purchased
+     Tesla, Austin Texas,          62, 08/08/2020,                  3
+     Tesla, Austin Texas,         102, 09/10/2022,                 11
+
+Stock information (the hq) does not need to be in this table!
+
+
+* a single observational unit is stored in multiple tables
+--> Example:
+id, customer_age, customer_location
+ 1,           22,        Seattle WA
+
+customer_id,       date, purchase_type, quantity
+          1, 08/08/2020,         order,       10
+
+For a given analysis this would have to a merged view.
+
+## What does pivot_longer do and why is it needed? ❌ ✅
+
+It can sometimes happen that data is spread across multiple
+columns, despite it being of the same variable:
+
+```{r}
+library("tidyverse")
+data_share_price <- tibble(
+    "name" = c("Tesla", "SpaceX"),
+    "2022" = c(80, 60),
+    "2023" = c(85, 59)
+)
+data_share_price
+```
+
+We can see that the share price of a given company is spread over multiple columns.
+
+```{r}
+data_share_price_pivot <- data_share_price %>%
+    pivot_longer(
+        cols = c("2022", "2023"),
+        names_to = "year",
+        values_to = "stock_price"
+    )
+data_share_price_pivot
+```
+
+This for example makes it much easier to f.e. read the median stock price.
+
+## What does pivot_wider do and for what can it be used? ❌ ❌ ✅
+
+Sometimes data is in a narrow format when it should be in a wide format.
+It is the inverse transformation to the `pivot_longer` method.
+
+```{r}
+data_share_price_pivot %>%
+    pivot_wider(
+        id_cols = "name",
+        names_from = "year",
+        values_from = "stock_price"
+    )
+```
+
+Its how we get back the format of the old data!
+
+## What does the separate method do and how is it used? ❌ ❌ ✅
+
+You can use it to "pull apart" string-columns.
+
+```{r}
+date_times <- tibble(
+    datetime = c("2020/17/03 10:00", "2022/19/06 11:30")
+)
+
+date_times %>%
+    separate("datetime", sep = " ", into = c("date", "time"))
+```
+
+## What does the unite method do and how is it used? ❌ ✅
+
+You can use it to merge multiple columns into a single string column:
+
+```{r}
+data_numbers <- tibble(
+    a = c(1, 1, 1),
+    b = c("b", "b", "b"),
+    c = c("c", "c", "c")
+)
+data_numbers %>%
+    unite(new_col, a, b, c, sep = ",")
+```
+
+The columns don't even have to all be string columns 😊
+
+## What does the complete method do and how can it be used? ❌ ✅
+
+It can be used to highlight missing values, 
+by exhaustively combining a set of column values 
+(cartesian product of variables 🤓).
+
+```{R}
+obs_with_na <- tibble(
+    name = c("Pikachu", "Pikachu", "Glumanda", "Glumanda"),
+    variable = c("color", "attack", "color", "evolution"),
+    value = c("yellow", "thundershock", "orange", "Glutexo")
+)
+obs_with_na
+```
+
+On first glance it is hard to notice if something is missing:
+
+```{r}
+obs_with_na %>%
+    complete(name, variable)
+```
+--> Glumanda has no specified attack
+--> Pikachu has no specified evolution
+
+## What are the 5 basic data operations that dyplr provides? ❌ ✅
+
+* selecting columns with `select`
+* filtering rows with `filter`
+* create new variables as a function of existing ones with `mutate`
+* collapsing complex values into a simpler summary with `summarise`
+* reordering rows with `arrange`
+
+## What do all of the 5 data operations of dyplr have in common? ✅
+
+* take data as first argument
+* subsequent arguments don't require column names in quotes
+* results in a new data frame
+
+## Given the NYC flights data set, how do you use select on it? ✅
+
+```{r}
+library("nycflights13")
+flights
+```
+
+```{r}
+flights %>% select(dep_delay)
+```
+
+## How can you use select to select a range of rows? ✅
+
+```{r}
+flights %>% select(year:day)
+```
+
+## How can you use select to select the inverse of a range of rows? ✅
+
+```{r}
+flights %>% select(-(year:day))
+```
+
+## How can you use select to rename variables, what is an unintented consequence? ✅
+
+```{r}
+flights %>% select(year_a = year)
+```
+
+--> drops all unmentioned columns
+
+## What is an alternative, more stable way of renaming columns? ✅
+
+```{r}
+flights %>% rename(year_a = year)
+```
+
+--> retains columns
+
+## What are the 5 helper functions that can be used within select? ❌ ✅
+
+* `starts_with` --> check if column name starts with string
+* `ends_with` --> check if column name ends with string
+* `matches` -->  check if the column name matches a regex
+* `contains` --> check if column name contains string
+* `num_range` --> for example `num_range("x", 1:3)` to `x1`, `x2`, `x3`
+
+## When it comes to these helpers, how do they deal with upper and lower case strings? ✅
+
+By default, the case is ignored.
+
+```{r}
+flights %>% select(starts_with("ARR"))
+```
+
+```{r}
+flights %>% select(starts_with("ARR", ignore.case = FALSE))
+```
+
+you need to mind the case explicitely.
+
+## How can you use select to move columns to the start? ✅
+
+The `everything` helper is really useful, since then you dont have to mention all columns.
+
+```{r}
+flights %>% select(dep_time, everything())
+```
+
+## What happens if you select the same column twice with named indexing? ✅
+
+```{r}
+flights %>% select(dep_time, dep_time, everything())
+```
+
+## What happens if you select a column twice via strign indexing? ✅
+
+```{r}
+flights %>% select(c("dep_time", "dep_time"))
+```
+
+It's only selected once.
+
+## If you supply multiple conditions as arguments to a filter, what is the resulting filter criteria? ✅
+
+A logical conjunction of all the supplied conditions.
+
+## Given the NYC flights data set how do we execute a filter on it, with conditions on multiple variables? ✅
+
+```{r}
+filtered_flights <- flights %>%
+    filter(carrier == "EV" | carrier == "MQ", month > 5)
+```
+
+## How can you use between when filtering rows? ✅
+
+```{r}
+flights %>% filter(between(month, 6, 8))
+```
+
+## Given the NYC flights data set, how do we use mutate to create a new row? ✅
+
+```{r}
+mutated_flights <- flights %>% mutate(
+    speed = distance / air_time
+)
+```
+
+## Can you reference newly created columns in order to create others, in the same mutate statement? ✅
+
+```{r}
+flights %>%
+    mutate(
+        speed = distance / air_time,
+        speed_10 = speed * 10
+    ) %>%
+    select(speed, speed_10)
+```
+
+## What does transmute do and how does it differ from mutate? ✅
+
+It discards the old columns and only keeps the newly created ones.
+
+```{r}
+flights %>%
+    transmute(
+        speed = distance / air_time,
+        speed_10 = speed * 10
+    )
+```
+
+## What is the prerequisite for using functions in a mutate statement? ❌ ✅
+
+They need to be vectorized:
+
+```{r}
+flights %>%
+    transmute(
+        speed = distance / air_time,
+        speed_log = log(speed)
+    )
+```
+
+## Given the NYC flights data set, how can you use arrange and for what? ✅
+
+You could use it to order the data set, by the departure time.
+
+```{r}
+flights %>% arrange(year, month, day, dep_time)
+```
+
+Row 1 now corresponds to the first departed flight in this data set.
+
+## What is the behaviour for missing values when using arrange? ✅
+
+They are sorted towards the end.
+
+```{r}
+flights %>%
+    arrange(dep_time) %>%
+    tail(n = 3)
+```
+
+## When wanting to sort in a descending order, how can this be accomplished? ✅
+
+```{r}
+flights %>% arrange(desc(dep_time))
+```
+
+## What is the interaction between desc and missing values? ✅
+
+Missing values are still sorted towards the end.
+
+```{r}
+flights %>%
+    arrange(desc(dep_time)) %>%
+    tail(n = 3)
+```
+
+## How can you use arrange to sort missing values to the top? ✅
+
+```{r}
+flights %>% arrange(desc(is.na(dep_time)))
+```
+
+## Exercises: ✅
+
+Currently, dep_time and sched_dep_time are convenient to look at, but hard to compute with because
+they're not really continuous variables. Convert them to a more convenient representation of number
+of minutes since midnight.
+
+```{r}
+flights %>%
+    transmute(
+        dep_since_midnight = 60 * (dep_time %/% 100) + dep_time %% 100,
+        sched_dep_since_midnight = 60 * (sched_dep_time %/% 100) + sched_dep_time %% 100
+    )
+```
+
+Compare `air_time` with `arr_time - dep_time`. What do you see?
+
+```{r}
+library(ggplot2)
+
+ggplot(flights, aes(air_time, arr_time - dep_time)) +
+    geom_point()
+```
+
+## What is the purpose of summarise and what can it be used for? ✅
+
+You can collapse all rows of a dataframe into a single row:
+
+```{r}
+flights %>% summarise(delay = mean(dep_delay, na.rm = TRUE))
+```
+
+## How does summarise get to its full potential? ✅
+
+By combining it with a group by statement...
+
+```{r}
+flights %>%
+    group_by(carrier) %>%
+    summarise(dep_delay = mean(dep_delay, na.rm = TRUE)) %>%
+    arrange(desc(dep_delay))
+```
+
+## What are some useful summary functions when using summarise? ✅
+
+* `mean`
+* `median`
+* `sd` --> standard deviation
+* `IQR` --> interquartile range (quartile 3 minus quartile 1, less susceptible to outliers then sd)
+* `mad` --> median absolute deviation (variability measure, more robust than sd)
+* `first` --> pick first value
+* `last` --> pick last value
+
+## How do you count the number of occurences per group? ✅
+
+```{r}
+flights %>%
+    group_by(carrier) %>%
+    summarise(n_flights = n())
+```
+
+## How do you count the number of non-missing attributes per group? ❌ ✅
+
+```{r}
+flights %>%
+    group_by(carrier) %>%
+    summarise(count_dep_time = sum(!is.na(dep_time)))
+```
+
+## How do you count the distinct number of occurences? ✅
+
+```{r}
+flights %>%
+    group_by(dest) %>%
+    summarise(origins = n_distinct(origin)) %>%
+    arrange(desc(origins))
+```
+😴
+
+## How can the count method be utilized? ❌ ✅
+
+You can count the number of things per group/variable expression.
+Very handy, because you don't have to use groupby + summarise.
+
+```{r}
+flights %>%
+    count(carrier)
+```
+
+## Exercise: Which flight is always at least 10 minutes late?
+
+```{r}
+flights %>%
+    group_by(flight) %>%
+    summarise(min_delay = min(arr_delay, na.rm = TRUE)) %>%
+    filter(min_delay >= 10)
+```
+
+## What are the 5 functions to perform joins with in dplyr? ❌ ✅
+
+* `inner_join`
+* `left_join`
+* `right_join`
+* `full_join`
+* `merge`
+
+## How can you use merge in order to perform all the different types of joins? ❌ ✅
+
+* `merge(x, y)` --> inner join
+* `merge(x, y, all.x = TRUE)` --> left join
+* `merge(x, y, all.y = TRUE)` --> right join
+* `merge(x, y, all.x = TRUE, all.y = TRUE)` --> full join
+
+## How do you join by when the two join keys have the same name? ✅
+
+```{r}
+x <- tibble(
+    id = c(1, 2, 3, 4),
+    value = c("value_1", "value_2", "value_3", "value_4")
+)
+
+y <- tibble(
+    id = c(1, 2, 3, 4),
+    description = c(
+        "description_1",
+        "description_2",
+        "description_3",
+        "description_4"
+    )
+)
+
+x %>% inner_join(y, by = "id")
+```
+
+## How do you join by if the join keys do not have the same name? ✅
+
+```{r}
+y_v2 <- y %>% transmute(id_key = id, description = description)
+
+x %>% inner_join(y_v2, by = c("id" = "id_key"))
+```
+
+## How do you natural join? ✅
+
+
+```{r}
+x %>% inner_join(y)
+```
+
+just don't mention the by clause
+
+
+## What happens if there are duplicate keys in any of the tables? ✅
+
+* only one relationship has duplicate keys 
+    --> get duplicate rows for each duplicated entry
+* both relationships have duplicate keys 
+    --> cartesian product between duplicate keys from both tables
+
+## What are filtering joins? ✅
+
+Joins that do not actually merge two tables, but just filter on of them.
+
+* `semi_join` --> keep all rows that match in first table
+* `anti_join` --> keep all rows that do not have a match in the second relationship
+
+## Please demonstrate how the "case_when" statement can be used ✅
+
+```{r}
+flights_cat <- flights %>%
+    transmute(
+        category = case_when(
+            dep_delay <= 0 ~ "ahead",
+            dep_delay > 0 & dep_delay <= 100 ~ "slight delay",
+            dep_delay > 100 ~ "delayed",
+            default = TRUE ~ "YEEET"
+        )
+    )
+flights_cat
+```
+
+## How can we cast a string variable to a factor? ✅
+
+```{r}
+flights_cat <- flights_cat %>%
+    mutate(
+        fac_cat = as.factor(category)
+    )
+
+levels(flights_cat$fac_cat)
+```
+
+## How can you reorder these factors? ✅
+
+using `fct_relevel`:
+
+```{r}
+flights_cat <- flights_cat %>%
+    mutate(
+        fac_cat = fct_relevel(fac_cat, "ahead", "slight delay")
+    )
+levels(flights_cat$fac_cat)
+```
+
+## What is the purpose of relevelling these factors? ✅
+
+Now in a group by the ordering is correct.
+
+```{r}
+flights_cat %>%
+    group_by(fac_cat) %>%
+    summarise(count = n())
+```
+
+## What does "fct_infreq" do? ✅
+
+Reorders a factor variable by the frequency of the factors.
+Largest frequence first.
+
+```{r}
+flights_cat %>%
+    transmute(
+        fac_cat = fct_infreq(fac_cat)
+    ) %>%
+    count(fac_cat)
+```
+
+## What does "fct_inorder" do? ❌ ✅
+
+Orders the factor variable by the order,
+in which they appear in the data set.
+
+```{r}
+flights_cat %>%
+    transmute(
+        fac_cat = fct_inorder(fac_cat)
+    ) %>%
+    count(fac_cat)
+```
+
+## What does "fct_reorder" do? ❌ ✅
+
+Orders factor levels by the median value of another statistic.
+
+```{r}
+flights_cat %>%
+    transmute(
+        val = runif(nrow(flights_cat)),
+        fac_cat = fct_reorder(fac_cat, val)
+    ) %>%
+    group_by(fac_cat) %>%
+    summarise(
+        med = median(val)
+    )
+```
+
+## What does "fct_recode" do? ❌ ❌ ✅
+
+Renames the levels...
+
+```{r}
+flights_cat %>%
+    transmute(
+        fac_cat = fct_recode(
+            fac_cat,
+            "DELAYED" = "delayed",
+            "yeet" = "YEEET",
+            "SLIGHT" = "slight delay",
+            "AHEAD" = "ahead"
+        )
+    ) %>%
+    count(fac_cat)
+```
+
+## What does "fct_collapse" do? ❌ ✅
+
+Helps you by reducing multiple factor levels into one.
+
+```{r}
+flights_cat %>%
+    transmute(
+        fac_cat = fct_collapse(
+            fac_cat,
+            "DELAYED" = c("delayed", "slight delay"),
+            "AHEAD" = c("ahead", "YEEET")
+        )
+    ) %>%
+    count(fac_cat)
+```
+
+## What can "fct_lump" be used for? ✅
+
+To group together the smallest groups in a factor variable:
+
+```{r}
+flights_cat %>%
+    transmute(
+        fac_cat = fct_lump(fac_cat)
+    ) %>%
+    count(fac_cat)
+```
+
+## What is the purpose of the "lubridate" library? ✅
+
+To make working with dates and times in R easier:
+
+```{r}
+library(lubridate)
+
+now()
+```
+
+## What are different ways of parsing dates? ✅
+
+generally you supply a string in a given format and call the corresponding parsing method:
+
+* "2020-11-12" --> `ymd` (because order is year month day)
+
+```{r}
+ymd("2021-01-12")
+```
+
+```{r}
+mdy("Jan 12 2021")
+```
+
+```{r}
+mdy("01/12/2021")
+```
+
+--> all the same date in different formats
+
+## How do you parse date times? ✅
+
+same as dates, just also add the time format in the parsing method
+
+```{r}
+mdy_hm("01/12/2021 11:11")
+```
+
+## How can you instantiate a date time from numbers? ❌ ✅
+
+```{r}
+flights %>%
+    select(year, month, day, hour, minute) %>%
+    mutate(date_time = make_datetime(year, month, day, hour, minute))
+```
+
+using make `date_time`
+
+## How can you switch from a datetime to a date? ❌ ✅
+
+```{r}
+as_date(now())
+```
+
+## How can you switch from a date to a datetime? ❌ ✅
+
+```{r}
+as_datetime(today())
+```
+
+## Given a date time, extract only the year: ✅
+
+```{r}
+year(now())
+```
+
+## Given a date time, extract only the month: ✅
+
+```{r}
+month(now())
+```
+
+## Given a date time, extract only the day: ✅
+
+```{r}
+day(now())
+```
+
+## Given a date time, extract only the day of the month, day of the year and day of the week: ❌ ✅
+
+```{r}
+mday(now()) # month
+```
+
+```{r}
+yday(now()) # year
+```
+
+```{r}
+wday(now()) # week
+```
+
+## How can you add a week, day or year to a datetime? ✅
+
+```{r}
+now() + weeks(1) # add weeks
+```
+
+```{r}
+now() + days(1) # add days
+```
+
+```{r}
+now() + years(1) # add years
+```
+
+## how can you export data with write.table, what are possible arguments? ✅
+
+* `sep` --> separator to use
+* `row.names` --> boolean whether to include row names
+* `col.names` --> boolean whether to include column names
+* `na` --> Token for missing values
+
+## Why can it be advantageous to use the "write.matrix" function in the MASS package? ✅
+
+Because it has a lower memory footprint
+--> especially important for large data sets
+
+## How do you use the save method of the haven package? ✅
+
+Pass one or multiple files, specify the file path.
+
+```{r}
+someObj <- c(1, 2, 3)
+someObj2 <- c(1, 2, 3)
+save(someObj, someObj2, file = "someFile.RData")
+```
+## What is the difference between the different file extensions ".rda", ".rData" and ".rds"? ✅
+
+* `.rData` --> multiple or global objects
+* `.rda` --> same as `.rData`
+* `.rds` --> single objects
+
+## How do you load .rda and .rData files? ❌ ✅
+
+using the `load` method --> adds to global namespace with same as previous name!
+
+## How do you load .rds files? ❌ ❌ ✅
+
+Using `readRDS`:
+
+```{r}
+someObjLoaded <- readRDS("someObj.rds") # can have a different name than originally
+```

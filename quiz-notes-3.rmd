@@ -1,0 +1,744 @@
+# AKSTA Quiz Notes 3
+
+🤓 Let's try and have some fun with Data Science 🤓
+
+```{r}
+demo("graphics")
+```
+
+Okay that was actually fun 🙂
+
+## What are the three groups that R plotting functions can be divided into?
+
+* High-level --> create new plots (sometimes as objects)
+* Low-level --> add information to an existing plot
+* Interactive graphics functions --> adding or extracting information from and to existing plots
+    --> use so called devices (f.e. mouse)
+
+# Univariate continous variable plots
+
+## Base R: How can you create a histogram in R?
+
+using the `hist`function
+
+```{r}
+x <- rnorm(100)
+hist(x)
+```
+
+## Base R: How can you create a boxplot in R?
+
+using the `boxplot` function
+
+```{r}
+x <- rnorm(100)
+boxplot(x)
+```
+
+## Base R: How can you create a density plot?
+
+```{r}
+x <- density(rnorm(100))
+plot(x)
+```
+
+Why does this work?
+
+`density` gives us a density estimate for the variable `x`.
+This density estimate has a special class, which has a specific plotting function.
+This function, plots the denisty nicely.
+
+```{r}
+class(x)
+```
+
+## Base R: How do you create a scatter plot (against the index of the vector of the univariate variable)?
+
+```{r}
+x <- rnorm(100)
+plot(x)
+```
+
+## Base R: How do you create a 1D scatter plot?
+
+```{r}
+x <- rnorm(50)
+stripchart(x)
+```
+
+## Base R: How can you create a QQ-plot in R?
+
+```{r}
+y <- rgamma(1000, shape = 10)
+qqnorm(y)
+```
+
+# Univariate categorical variable plot
+
+## Base R: How do you create a histogram for the occurrence of a categorical variable?
+
+```{r}
+fac1 <- factor(
+    sample(1:3, 15, replace = TRUE),
+    labels = c("Pidgey", "Metapod", "Ratata")
+)
+plot(fac1)
+```
+
+## Base R: How do you create a pie-chart of the occurrence for a categorical variable?
+
+```{r}
+fac2 <- factor(
+    sample(1:3, 15, replace = TRUE),
+    labels = c("Dodrio", "Nidoran", "Pidgeot")
+)
+pie(table(fac2))
+```
+
+## What does table do?
+
+takes in categorical variables,
+produces frequence/contingency tables.
+
+```{r}
+table(fac1)
+```
+
+--> frequency of the occurences
+
+```{r}
+table(fac1, fac2)
+```
+
+--> contingency/cooccurrence table
+--> variables must have same length
+
+## Base R: How do you plot the covariation of two variables?
+
+```{r}
+x <- rnorm(100)
+y <- x * 1.7 + 2 + rnorm(100)
+plot(x, y)
+```
+
+## Base R: How do you plot the pair-wise scatterplots of a matrix?
+
+for dataframes:
+
+```{r}
+x <- rnorm(100)
+y <- x * 1.7 + 2 + rnorm(100)
+z <- x * y + rnorm(100)
+r <- runif(100)
+X <- data.frame(x = x, y = y, z = z, r = r)
+pairs(X)
+```
+
+Can't make this work for matrices tho 🤪
+
+## Base R: Plotting the covariation of two discrete/categorical variables?
+
+```{r}
+fac1 <- factor(
+    sample(1:2, 15, replace = TRUE),
+    labels = c("is alien", "is human")
+)
+fac2 <- factor(
+    sample(1:2, 15, replace = TRUE),
+    labels = c("likes pickles", "dislikes pickles")
+)
+plot(fac1, fac2)
+```
+
+## Base R: Plotting a categorical variable against a continuous variable?
+
+```{r}
+race <- factor(
+    c(rep("is human", 50), rep("is alien", 50))
+)
+height <- c(rnorm(50, 175, 10), rnorm(50, 140, 30))
+plot(height ~ race)
+```
+
+Important: The reponse is always first.
+Imagine it as: "Model height by race."
+So "Model response by variable."
+"y ~ x"
+👽
+
+If you switch that, you get a "spine-plot" 💀
+
+```{r}
+plot(race ~ height)
+```
+
+--> category-split per variable expression
+
+## Base R: What are 3 methods fro displaying 3-dimensional data
+
+* `image` --> display as map of pixels, i.e. an image
+* `contour` --> display as an image, with "height" line indicators
+* `persp` --> display as 3D polygonal shape
+
+## Base: Demonstrate image 
+
+```{r}
+require(grDevices)
+x <- y <- seq(-4 * pi, 4 * pi, len = 200)
+r <- sqrt(outer(x^2, y^2, "+"))
+z <- cos(r^1) * exp(-r / 6)
+image(x, y, z)
+```
+
+## Base R: Demonstrate contour
+
+```{r}
+contour(x, y, z)
+```
+
+## Base R: Demonstrate persp
+
+```{r}
+persp(x, y, z)
+```
+
+## Base R: What are really cool high level plotting commands that change how these functions work?
+
+* `add = TRUE`: plot commands works like low-level function, i.e. becomes additive
+* `axes = FALSE`: don't include axis, good for custom axes
+* `log = "x"`, `log = "y"` or `log = "xy"`: log transform a variable
+* `xlab = "text"`: change label of x-axis
+* `ylab = "text"`: change label of y-axis
+* `main = "text"`: add title
+* `sub = "text"`: add subtitle
+* `type =` type of plot, different options, defaults to `p`
+    * `l` lines
+    * `b` points connected by lines
+    * `o` points overlayed by lines
+    * `h` vertical lines to zero axis
+    * `s` step function ._| line "follows" along defining point
+    
+    * `S` step function !‾ line "trails" before defining point
+    * `n`: dont show any indicators, helpful for lowe level function
+
+## Base R: What are useful functions for plotting points, lines and shapes?
+
+* `lines`: plot a line from data points
+* `points`: plot points from data points
+* `abline`: helper function to plot lines
+* `polygon`: add a polygon to an existing plot
+
+## Base R: Demonstrate lines, points and polygon
+
+```{r}
+x <- rnorm(20) + 1:20
+plot(x, type = "n")
+polygon(c(1:20, 20), c(x[], x[1]), col = "#72c78c")
+points(x)
+lines(x)
+```
+
+## Base R: What are useful functions and parameters used for styling plots?
+
+* `title`: add titles (`main`) or subtitles (`sub`)
+* `text`: add text add x, y coordinates into the plot
+* `axis`: used to specify anything about plot axis
+* `fill =`: fill color of shape
+* `lty =`: linetype/style of line
+* `lwd =`: width of lines
+* `col =`: color of line
+* `pch =`: style of point --> character i.e. pointcharcter ~ pch
+
+```{r}
+plot(1, 1, xlim = c(1, 10), ylim = c(0, 5), type = "n", axes = FALSE)
+points(1:9, rep(4.5, 9), cex = 1:9, col = 1:9, pch = 0:8)
+text(1:9, rep(3.5, 9), labels = paste(0:9), cex = 1:9, col = 1:9)
+points(1:9, rep(2, 9), pch = 9:17)
+text((1:9) + 0.25, rep(2, 9), paste(9:17))
+points(1:8, rep(1, 8), pch = 18:25)
+text((1:8) + 0.25, rep(1, 8), paste(18:25))
+```
+
+## Base R: Qhat are two different types of interactive functions in R?
+
+* `locator` --> adding points to graph
+* `identify` --> highlight data in a graph
+
+## How do you use locator?
+
+```{r}
+x <- rnorm(100)
+y <- rnorm(100)
+plot(x, y)
+while (TRUE) {
+    point <- locator(1)
+    print(point)
+    text(point, "clicked here")
+}
+```
+
+## How do you use identify?
+
+```{r}
+x <- rnorm(100)
+y <- rnorm(100)
+plot(x, y)
+id <- identify(x, y, labels = 1:100)
+print(id)
+```
+
+## What are graphics devices in R?
+
+They are essentially soft- or hardware entities, that can be the destination for graphical displays.
+Devices include:
+* Screen devices --> logical entities provided by software like Rstudio, X11 and so on
+* File devices --> a file to write to
+* Printer device --> print to physical printer, or a pdf
+* Other devices --> include html widgetss
+
+## How do you "permanently" change the graphical parameters of a device?
+
+using `par`
+
+```{r}
+par(pch = "*")
+x <- rnorm(100)
+y <- rnorm(100)
+plot(x, y)
+```
+
+When closing windows between calls, then pars get reset!
+
+```{r}
+x <- rnorm(100)
+y <- rnorm(100)
+plot(x, y)
+```
+
+## How do you list all graphical parameters?
+
+using `par()` without parameters
+
+```{r}
+par()
+```
+
+## What are the most important graphical parameters (according to the lecturers)?
+
+* `pch`: plotting character, either as character string, or as index [0-18]
+* `lty`: linetype, supplied as integer [1, ], not specified how many different
+* `lwd`: line width as multiples of the default width
+* `col`: specifies the color of a graphical element
+* `cex`: scaling of displayed characters
+
+## What are parameters concerning the figure margins?
+
+* `mai=(1, 2, 3, 4)`: for margin in inches
+* `mar=(1, 2, 3, 4)`: for margin in lines
+
+## What is the association between the margin parameters and their position around the plot?
+
+`mar=(bottom, left, top, right)`
+
+doesnt really make sense
+
+## How can you adjust the outer margin? What's the default?
+
+* `oma=(bottom, left, top, right)`: margin in lines
+* `omi=(bottom, left, top, right)`: margin in inches
+
+--> default is 0, distance between blot and its borders
+
+## What are the two functions that enable multiple plots per figure in base R?
+
+* `par` using `mfrow` or `mfcol`
+* `layout`
+
+
+## What is a great way of plotting function curves in R?
+
+```{r}
+curve(sin, -2 * pi, 2 * pi)
+```
+
+## How do you use par to create multi columns? How do the two ways differ?
+
+mfrow fills row-wise:
+1 2
+3 4
+
+```{r}
+par(mfrow = c(2, 2))
+curve(sin, -2 * pi, 2 * pi)
+curve(cos, -2 * pi, 2 * pi)
+curve(tan, -2 * pi, 2 * pi)
+curve(acos, -2 * pi, 2 * pi)
+```
+
+mfcol fills column-wise:
+1 3
+2 4
+
+```{r}
+par(mfcol = c(2, 2))
+curve(sin, -2 * pi, 2 * pi)
+curve(cos, -2 * pi, 2 * pi)
+curve(tan, -2 * pi, 2 * pi)
+curve(acos, -2 * pi, 2 * pi)
+```
+
+## How do you specify complex layouts using the layout function?
+
+creates a grid base dlayout
+
+`layout` has parameters:
+(
+    `mat`: a matrix, its dimensions specify the layout of the multiplot,
+        numbering denotes order of cells
+    `widths`: widths of the columns, default evenely spaced
+    `heights`: heights of the rows, default evenely spaced
+    `respect`: default `FALSE` means stretching and squishing plot to fit cell, 
+        if `TRUE` then retain aspect ratio of plot
+)
+
+```{r}
+layout(
+    mat = rbind(c(3, 0), c(1, 2)),
+    heights = c(1, 2),
+    widths = c(2, 1)
+)
+curve(tan, -2 * pi, 2 * pi)
+curve(sin, -2 * pi, 2 * pi)
+curve(cos, -2 * pi, 2 * pi)
+```
+
+## How do you list all possibles devices in R?
+
+```{r}
+help(Devices)
+```
+
+## How can you create a jpeg device?
+
+```{r}
+jpeg(
+    file = "/home/paul/Downloads/sinus.jpeg",
+    width = 150,
+    height = 150,
+    bg = "white"
+)
+curve(sin, -2 * pi, 2 * pi)
+dev.off()
+```
+
+## Why should you use dev.off() after you are done plotting to a device?
+
+* to free up the system resources
+* to avoid unexpected behaviour
+
+## What is the basic idea of the grammar of graphics?
+
+* move beyond simple categories of plots lile "scatterplot",
+    "lineplot", "pie-chart", etc.
+* instead identify structures and conventions that underpin these categories
+* learn to recombine them and use them on different data
+--> learn base rules and apply them differently like one does with words in a language
+
+## Describe the layered grammer of graphics and give examples for each layer?
+
+* `data`: structured data source
+    example: dataframe
+* `mapping`/`aesthetic`: relation between data and graphical property
+    example: variable "petal_width" maps onto x-coordinate
+* `statistical transformation` (optional): most often just the identity, some extra transformation
+    example: binning, aggregation, smoothing, kde
+* `geom`: representation of variable as some sort of geometric object
+    require certain outputs from aesthetic
+    example: bars, lines, points
+* `scale`: mapping between the data values and their visual representations
+    its the transformation from one dimension into the other: brain size --> color
+    example: map numeric variable to color gradient
+* `coordinates`: which coordinate system to use
+    example: cartesian, polar
+* `faceting`: splitting the data, subsettign it, different display based on factes
+    example: hue in ggplot2
+
+
+## Why is data its own layer?
+
+* because a visualization can be independent of the data it represents.
+* a given visualization can be applied to many different data sets.
+
+## What are some aesthetics to map to (about 5 examples)?
+
+* x and y axis
+* color and alpha
+* line style, width
+* shape
+* size
+
+
+## How do you plot windows?
+
+```{r}
+library(ggplot2)
+library(tidyverse)
+
+win <- tibble(
+    name = c("1.0", "2.0", "3.1", "95", "98", "2000", "XP", "7", "8", "10"),
+    version = as.integer(name)
+)
+
+ggplot(win, aes(x = name, y = version, hue = name)) +
+    geom_col()
+```
+
+## How are statistics and geoms related
+
+* statistics and geoms can be linked
+example:
+--> group and count statistic is linked to bar charts and vice versa
+
+## How do you load the penguins data set?
+
+```{r}
+library("palmerpenguins")
+```
+
+## Plot a histogram of the body weight of the penguins
+
+```{r}
+ggplot(penguins, aes(x = body_mass_g)) +
+    geom_histogram()
+```
+
+## Plot a histogram of the body weight of the penguins with a bin width of 500
+
+```{r}
+ggplot(penguins, aes(x = body_mass_g)) +
+    geom_histogram(binwidth = 500)
+```
+
+## Now split and stack the histogram by penguin species
+
+```{r}
+ggplot(penguins, aes(x = body_mass_g, fill = species)) +
+    geom_histogram(binwidth = 500)
+```
+
+## Noe create the histogram without stacking the different species values, but displaying them next to eahc other
+
+```{r}
+ggplot(penguins, aes(x = body_mass_g, fill = species)) +
+    geom_histogram(binwidth = 500, position = "dodge")
+```
+
+## Use faceting to create a colored histogram of the bodyweight for each species
+
+```{r}
+ggplot(penguins, aes(x = body_mass_g, fill = species)) +
+    geom_histogram(binwidth = 500) +
+    facet_wrap(~species)
+```
+
+## Now show the proportion of penguin species by island as a stacked bar plot
+
+```{r}
+ggplot(penguins, aes(x = island, fill = species)) +
+    geom_bar()
+```
+
+## Now show the distibution of body weights per species in boxplots
+
+```{r}
+ggplot(penguins, aes(x = species, y = body_mass_g)) +
+    geom_boxplot()
+```
+
+## Now show this exact box plot, but split and color groups for each species also by gender
+
+```{r}
+ggplot(penguins, aes(x = species, y = body_mass_g, color = sex)) +
+    geom_boxplot()
+```
+
+## show a scatter plot contrasting body mass and flipper length of the penguins
+
+```{r}
+ggplot(penguins, aes(x = flipper_length_mm, y = body_mass_g)) +
+    geom_point()
+```
+
+## Now make this same scatterplot and distinguish the penguins species by color and sex by symbol
+
+```{r}
+ggplot(penguins, aes(
+    x = flipper_length_mm,
+    y = body_mass_g,
+    color = species,
+    shape = sex
+)) +
+    geom_point()
+```
+
+## How do you show both the base histogram of the bodyweights but also overlay the species specific histograms
+
+```{r}
+ggplot(penguins, aes(
+    x = body_mass_g,
+)) +
+    geom_histogram() +
+    geom_histogram(aes(color = species),
+        fill = NA,
+        position = "identity"
+    )
+```
+
+## What is the effect of using position=identity in a hsitogram?
+
+bars arent being stacked over each other when split by some variable occurs,
+rather than that the bars are displayed as overlapping elements
+
+## Draw a plot describing the distribution of body weights, both as a histogram and as a density plot
+
+```{r}
+ggplot(penguins, aes(x = body_mass_g, y = stat(density))) +
+    geom_histogram(fill = "grey") +
+    geom_density()
+```
+
+## How can you set the title and axis labels of a plot, that has been facet wrapped
+
+```{r}
+ggplot(penguins, aes(x = body_mass_g, fill = species)) +
+    geom_histogram(binwidth = 500) +
+    facet_wrap(~species) +
+    ggtitle("Body mass distribution by species") +
+    xlab("Body mass gramm") +
+    ylab("Counts")
+```
+
+## How do you set the title of a plot in ggplot
+
+using the low-level plotting funtion `ggtitle`
+
+## Given the facet wrapped histogram, how could you draw the mean body weight across the entire data set onto each facet?
+
+need to create an extra data frame --> mean is the same per species
+
+```{r}
+pengu_mean <- tibble(
+    species = unique(penguins$species),
+    mean_bwg = rep(mean(penguins$body_mass_g, na.rm = TRUE), 3)
+)
+
+ggplot(penguins, aes(x = body_mass_g, fill = species)) +
+    geom_histogram(binwidth = 500) +
+    geom_vline(data = pengu_mean, aes(xintercept = mean_bwg)) +
+    facet_wrap(~species)
+```
+
+## Okay this one is going to be complicated
+## Lets say you want a histogram facet wrapped by species
+## The catch is that overlayed over each histogram you want the density of the entire data set
+## consider again the body mass variable
+
+need a really weird data frame here.
+remember, each facet needs to receive the same density.
+
+```{r}
+pengu_dens <- tibble(
+    species = rep(unique(penguins$species), each = nrow(penguins)),
+    body_mass_g = rep(penguins$body_mass_g, 3)
+)
+
+ggplot(penguins, aes(x = body_mass_g, y = stat(density))) +
+    geom_histogram(binwidth = 500, aes(fill = species)) +
+    geom_density(data = pengu_dens) +
+    facet_wrap(~species)
+```
+
+## In the gganimate package what can you use the "transition_state" function for?
+
+you can set up multiple states for a plot and switch between them
+
+```{r}
+library("gganimate")
+
+ggplot(penguins, aes(x = body_mass_g, y = stat(density))) +
+    geom_histogram(binwidth = 500, aes(fill = species)) +
+    geom_density(data = pengu_dens) +
+    transition_states(species)
+```
+
+## How can you update the user on the current frame of the transition state?
+
+Using variable injection in a text attribute:
+`{closest_state}`
+`{frame}`
+`{nframes}`
+
+```{r}
+library("gganimate")
+
+ggplot(penguins, aes(x = body_mass_g, y = stat(density))) +
+    geom_histogram(binwidth = 500, aes(fill = species)) +
+    geom_density(data = pengu_dens) +
+    transition_states(species) +
+    ggtitle("Now showing {closest_state}",
+        subtitle = "Frame {frame} of {nframes}"
+    )
+```
+
+## How can you fine tune the animation that is used for data fading?
+
+* `enter_` functions like `enter_fade`
+* `exit_` functions like `exit_shrink`
+
+## Give an example for using the gapminder data how to animate time
+
+```{r}
+library("gapminder")
+
+ggplot(gapminder, aes(x = gdpPercap, y = lifeExp, size = pop, colour = country)) +
+    geom_point(show.legend = FALSE, alpha = 0.7) +
+    scale_color_viridis_d() +
+    scale_size(range = c(2, 12)) +
+    scale_x_log10() +
+    labs(x = "GDP per capita", y = "Life expectancy") +
+    transition_time(year) +
+    labs(title = "Year: {frame_time}")
+```
+
+## How do create an interactive graph using plotly?
+
+```{r}
+library(plotly)
+
+p <- ggplot(penguins, aes(flipper_length_mm, body_mass_g, color = species)) +
+    geom_point()
+
+pltly <- ggplotly(p, width = 900, height = 900)
+pltly
+```
+
+## How can you customize plotly plots?
+
+using:
+* `layout()`
+* `style()`
+
+with the dplyr notation
+
+## What are possible attributes for/ capabilities of layout?
+
+* `hoverlabel`: to stylize hoverlabels
+* `dragmode`: to change drag benhavior
+* `selectdirection`: to constrain rectangular selections
+* add dropdowns
+
+## What are some of the capabilties of style?
+
+* control tooltip content
+* turn hovering on/off 
+* add marker points to lines
