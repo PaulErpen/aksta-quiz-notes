@@ -8,7 +8,7 @@ demo("graphics")
 
 Okay that was actually fun 🙂
 
-## What are the three groups that R plotting functions can be divided into?
+## What are the three groups that R plotting functions can be divided into? ✅
 
 * High-level --> create new plots (sometimes as objects)
 * Low-level --> add information to an existing plot
@@ -17,7 +17,7 @@ Okay that was actually fun 🙂
 
 # Univariate continous variable plots
 
-## Base R: How can you create a histogram in R?
+## Base R: How can you create a histogram in R? ✅
 
 using the `hist`function
 
@@ -26,7 +26,7 @@ x <- rnorm(100)
 hist(x)
 ```
 
-## Base R: How can you create a boxplot in R?
+## Base R: How can you create a boxplot in R? ✅
 
 using the `boxplot` function
 
@@ -35,7 +35,7 @@ x <- rnorm(100)
 boxplot(x)
 ```
 
-## Base R: How can you create a density plot?
+## Base R: How can you create a density plot? ✅
 
 ```{r}
 x <- density(rnorm(100))
@@ -52,21 +52,21 @@ This function, plots the denisty nicely.
 class(x)
 ```
 
-## Base R: How do you create a scatter plot (against the index of the vector of the univariate variable)?
+## Base R: How do you create a scatter plot (against the index of the vector of the univariate variable)? ✅
 
 ```{r}
 x <- rnorm(100)
 plot(x)
 ```
 
-## Base R: How do you create a 1D scatter plot?
+## Base R: How do you create a 1D scatter plot? ❌
 
 ```{r}
 x <- rnorm(50)
 stripchart(x)
 ```
 
-## Base R: How can you create a QQ-plot in R?
+## Base R: How can you create a QQ-plot in R? ✅
 
 ```{r}
 y <- rgamma(1000, shape = 10)
@@ -75,7 +75,7 @@ qqnorm(y)
 
 # Univariate categorical variable plot
 
-## Base R: How do you create a histogram for the occurrence of a categorical variable?
+## Base R: How do you create a histogram for the occurrence of a categorical variable? ✅
 
 ```{r}
 fac1 <- factor(
@@ -85,7 +85,7 @@ fac1 <- factor(
 plot(fac1)
 ```
 
-## Base R: How do you create a pie-chart of the occurrence for a categorical variable?
+## Base R: How do you create a pie-chart of the occurrence for a categorical variable? ❌
 
 ```{r}
 fac2 <- factor(
@@ -95,7 +95,7 @@ fac2 <- factor(
 pie(table(fac2))
 ```
 
-## What does table do?
+## What does table do? ❌
 
 takes in categorical variables,
 produces frequence/contingency tables.
@@ -113,7 +113,7 @@ table(fac1, fac2)
 --> contingency/cooccurrence table
 --> variables must have same length
 
-## Base R: How do you plot the covariation of two variables?
+## Base R: How do you plot the covariation of two variables? ✅
 
 ```{r}
 x <- rnorm(100)
@@ -121,7 +121,7 @@ y <- x * 1.7 + 2 + rnorm(100)
 plot(x, y)
 ```
 
-## Base R: How do you plot the pair-wise scatterplots of a matrix?
+## Base R: How do you plot the pair-wise scatterplots of a data frame? ❌
 
 for dataframes:
 
@@ -136,7 +136,7 @@ pairs(X)
 
 Can't make this work for matrices tho 🤪
 
-## Base R: Plotting the covariation of two discrete/categorical variables?
+## Base R: Plotting the covariation of two discrete/categorical variables? ❌
 
 ```{r}
 fac1 <- factor(
@@ -150,7 +150,7 @@ fac2 <- factor(
 plot(fac1, fac2)
 ```
 
-## Base R: Plotting a categorical variable against a continuous variable?
+## Base R: Plotting a categorical variable against a continuous variable? ❌
 
 ```{r}
 race <- factor(
@@ -174,13 +174,13 @@ plot(race ~ height)
 
 --> category-split per variable expression
 
-## Base R: What are 3 methods fro displaying 3-dimensional data
+## Base R: What are 3 methods for displaying 3-dimensional data ❌ ✅
 
 * `image` --> display as map of pixels, i.e. an image
 * `contour` --> display as an image, with "height" line indicators
 * `persp` --> display as 3D polygonal shape
 
-## Base: Demonstrate image 
+## Base: Demonstrate image ❌
 
 ```{r}
 require(grDevices)
@@ -190,19 +190,19 @@ z <- cos(r^1) * exp(-r / 6)
 image(x, y, z)
 ```
 
-## Base R: Demonstrate contour
+## Base R: Demonstrate contour ✅
 
 ```{r}
 contour(x, y, z)
 ```
 
-## Base R: Demonstrate persp
+## Base R: Demonstrate persp ✅
 
 ```{r}
 persp(x, y, z)
 ```
 
-## Base R: What are really cool high level plotting commands that change how these functions work?
+## Base R: What are really cool high level plotting commands that change how these functions work? ❌
 
 * `add = TRUE`: plot commands works like low-level function, i.e. becomes additive
 * `axes = FALSE`: don't include axis, good for custom axes
@@ -221,14 +221,18 @@ persp(x, y, z)
     * `S` step function !‾ line "trails" before defining point
     * `n`: dont show any indicators, helpful for lowe level function
 
-## Base R: What are useful functions for plotting points, lines and shapes?
+```{r}
+plot(x, y, axes = FALSE, xlab="", ylab="", type="b")
+```
+
+## Base R: What are useful functions for plotting points, lines and shapes? ❌
 
 * `lines`: plot a line from data points
 * `points`: plot points from data points
 * `abline`: helper function to plot lines
 * `polygon`: add a polygon to an existing plot
 
-## Base R: Demonstrate lines, points and polygon
+## Base R: Demonstrate lines, points and polygon ❌
 
 ```{r}
 x <- rnorm(20) + 1:20
@@ -238,11 +242,19 @@ points(x)
 lines(x)
 ```
 
-## Base R: What are useful functions and parameters used for styling plots?
+## Demonstrate different parameters for abline (2 in total) ❌
+
+```{r}
+plot(1, 1, type="n", ylim=c(-2, 2), xlim=c(-2, 2)) + abline(v=0) + abline(h=0)
+```
+
+## Base R: What are useful functions used for styling plots? ❌
 
 * `title`: add titles (`main`) or subtitles (`sub`)
 * `text`: add text add x, y coordinates into the plot
 * `axis`: used to specify anything about plot axis
+
+## What are useful parameters for styling plots? ❌
 * `fill =`: fill color of shape
 * `lty =`: linetype/style of line
 * `lwd =`: width of lines
@@ -259,12 +271,12 @@ points(1:8, rep(1, 8), pch = 18:25)
 text((1:8) + 0.25, rep(1, 8), paste(18:25))
 ```
 
-## Base R: Qhat are two different types of interactive functions in R?
+## Base R: What are two different types of interactive functions in R? ❌
 
 * `locator` --> adding points to graph
 * `identify` --> highlight data in a graph
 
-## How do you use locator?
+## How do you use locator? ❌
 
 ```{r}
 x <- rnorm(100)
@@ -277,7 +289,7 @@ while (TRUE) {
 }
 ```
 
-## How do you use identify?
+## How do you use identify? ❌
 
 ```{r}
 x <- rnorm(100)
@@ -287,7 +299,7 @@ id <- identify(x, y, labels = 1:100)
 print(id)
 ```
 
-## What are graphics devices in R?
+## What are graphics devices in R? ✅
 
 They are essentially soft- or hardware entities, that can be the destination for graphical displays.
 Devices include:
@@ -296,7 +308,7 @@ Devices include:
 * Printer device --> print to physical printer, or a pdf
 * Other devices --> include html widgetss
 
-## How do you "permanently" change the graphical parameters of a device?
+## How do you "permanently" change the graphical parameters of a device? ✅
 
 using `par`
 
@@ -315,7 +327,7 @@ y <- rnorm(100)
 plot(x, y)
 ```
 
-## How do you list all graphical parameters?
+## How do you list all graphical parameters? ✅
 
 using `par()` without parameters
 
@@ -323,7 +335,7 @@ using `par()` without parameters
 par()
 ```
 
-## What are the most important graphical parameters (according to the lecturers)?
+## What are the most important graphical parameters (according to the lecturers)? ✅
 
 * `pch`: plotting character, either as character string, or as index [0-18]
 * `lty`: linetype, supplied as integer [1, ], not specified how many different
@@ -331,37 +343,37 @@ par()
 * `col`: specifies the color of a graphical element
 * `cex`: scaling of displayed characters
 
-## What are parameters concerning the figure margins?
+## What are parameters concerning the figure margins? ❌
 
 * `mai=(1, 2, 3, 4)`: for margin in inches
 * `mar=(1, 2, 3, 4)`: for margin in lines
 
-## What is the association between the margin parameters and their position around the plot?
+## What is the association between the margin parameters and their position around the plot? ❌
 
 `mar=(bottom, left, top, right)`
 
 doesnt really make sense
 
-## How can you adjust the outer margin? What's the default?
+## How can you adjust the outer margin? What's the default? ❌
 
 * `oma=(bottom, left, top, right)`: margin in lines
 * `omi=(bottom, left, top, right)`: margin in inches
 
 --> default is 0, distance between blot and its borders
 
-## What are the two functions that enable multiple plots per figure in base R?
+## What are the two functions that enable multiple plots per figure in base R? ❌
 
 * `par` using `mfrow` or `mfcol`
 * `layout`
 
 
-## What is a great way of plotting function curves in R?
+## What is a great way of plotting function curves in R? ❌
 
 ```{r}
 curve(sin, -2 * pi, 2 * pi)
 ```
 
-## How do you use par to create multi columns? How do the two ways differ?
+## How do you use par to create multi columns? How do the two ways differ? ❌
 
 mfrow fills row-wise:
 1 2
@@ -387,7 +399,7 @@ curve(tan, -2 * pi, 2 * pi)
 curve(acos, -2 * pi, 2 * pi)
 ```
 
-## How do you specify complex layouts using the layout function?
+## How do you specify complex layouts using the layout function? ❌
 
 creates a grid base dlayout
 
@@ -412,13 +424,13 @@ curve(sin, -2 * pi, 2 * pi)
 curve(cos, -2 * pi, 2 * pi)
 ```
 
-## How do you list all possibles devices in R?
+## How do you list all possibles devices in R? ❌
 
 ```{r}
 help(Devices)
 ```
 
-## How can you create a jpeg device?
+## How can you create a jpeg device? ❌
 
 ```{r}
 jpeg(
